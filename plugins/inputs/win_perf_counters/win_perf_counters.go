@@ -345,7 +345,7 @@ func (m *Win_PerfCounters) Gather(acc telegraf.Accumulator) error {
 	// Parse the config once
 	var err error
 
-	if m.lastRefreshed.IsZero() || (m.CountersRefreshInterval.Duration.Nanoseconds() > 0 && m.lastRefreshed.Add(m.CountersRefreshInterval.Duration).Before(time.Now())) {
+	if m.lastRefreshed.IsZero() {
 		if m.counters != nil {
 			m.counters = m.counters[:0]
 		}
@@ -439,6 +439,28 @@ func (m *Win_PerfCounters) Gather(acc telegraf.Accumulator) error {
 			tags["instance"] = instance.instance
 		}
 		acc.AddFields(instance.name, fields, tags, timestamp)
+	}
+
+	if (m.CountersRefreshInterval.Duration.Nanoseconds() > 0 && m.lastRefreshed.Add(m.CountersRefreshInterval.Duration).Before(time.Now())) {
+		if m.counters != nil {
+			m.counters = m.counters[:0]
+		}
+
+		if err = m.query.Open(); err != nil {
+			return err
+		}
+
+		if err = m.ParseConfig(); err != nil {
+			return err
+		}
+		//some counters need two data samples before computing a value
+		if err = m.query.CollectData(); err != nil {
+			return err
+		}
+		m.lastRefreshed = time.Now()
+
+		// See https://github.com/influxdata/telegraf/issues/7499
+		//time.Sleep(time.Second)
 	}
 
 	return nil
