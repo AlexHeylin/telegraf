@@ -363,8 +363,7 @@ func (m *Win_PerfCounters) Gather(acc telegraf.Accumulator) error {
 		}
 		m.lastRefreshed = time.Now()
 
-		// See https://github.com/influxdata/telegraf/issues/7499
-		//time.Sleep(time.Second)
+		time.Sleep(time.Second)
 	}
 
 	var collectFields = make(map[instanceGrouping]map[string]interface{})
@@ -459,8 +458,7 @@ func (m *Win_PerfCounters) Gather(acc telegraf.Accumulator) error {
 		}
 		m.lastRefreshed = time.Now()
 
-		// See https://github.com/influxdata/telegraf/issues/7499
-		//time.Sleep(time.Second)
+		time.Sleep(time.Second)
 	}
 
 	return nil
